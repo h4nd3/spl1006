@@ -800,6 +800,93 @@ function pickQuestions(chId) {
 }
 const Q = { get finansal(){ return pickQuestions('finansal'); }, get borsa(){ return pickQuestions('borsa'); }, get pay(){ return pickQuestions('pay'); }, get borclanma(){ return pickQuestions('borclanma'); }, get para(){ return pickQuestions('para'); }, get swap(){ return pickQuestions('swap'); }, get viop(){ return pickQuestions('viop'); }, get tcmb(){ return pickQuestions('tcmb'); }, get takasbank(){ return pickQuestions('takasbank'); }, get tefas(){ return pickQuestions('tefas'); }, };
 
+const SUMMARIES = {
+  finansal:[
+    {title:"Temel Tanımlar",html:"<p><strong>Finansal piyasa</strong>: Fon arz edenler ile fon talep edenlerin karşılaştığı piyasa.</p><ul><li><strong>Para Piyasası</strong>: Vade <strong>1 yıldan kısa</strong></li><li><strong>Sermaye Piyasası</strong>: Vade <strong>1 yıldan uzun</strong></li><li><strong>Birincil Piyasa</strong>: Menkul kıymetin ilk ihracı — fon ihraçcıya gider</li><li><strong>İkincil Piyasa</strong>: Mevcut kıymetlerin alım satımı — Borsa İstanbul</li></ul>"},
+    {title:"Para Piyasası Araçları",html:"<div class='tag-row'><span class='tag'>Hazine Bonosu</span><span class='tag'>Finansman Bonosu</span><span class='tag'>Banka Bonoları</span><span class='tag'>Repo / Ters Repo</span></div><div class='hl-box'>Hisse senedi = sermaye piyasası aracıdır, para piyasası değil.</div>"},
+    {title:"Sınav İpuçları",html:"<div class='info-box'>En sık sorulan: para–sermaye piyasası farkı, hangi araçların hangi kategoride olduğu, birincil/ikincil piyasa tanımları.</div>"},
+  ],
+  borsa:[
+    {title:"Ortaklık & Yönetim",html:"<ul><li>TVF: <strong>~%80,6</strong> · Nasdaq: <strong>%7</strong></li><li>Yönetim Kurulu: en az <strong>5</strong>, en fazla <strong>9</strong> üye</li><li>Görev süresi: <strong>3 yıl</strong></li><li>Genel Müdür: <strong>doğal üye</strong></li></ul>"},
+    {title:"Önemli Kavramlar",html:"<ul><li><strong>Kotasyon</strong>: Menkul kıymetin Borsa listelerine alınması</li><li><strong>Borsa üyesi</strong>: SPK lisanslı yatırım kuruluşları</li><li><strong>Denetim</strong>: Borsa → üyeleri denetler · SPK → Borsa'yı denetler</li></ul><div class='hl-box'>YK = en az 5, en fazla 9 üye, 3 yıl görev — bu rakamlar sınavda çıkar.</div>"},
+  ],
+  pay:[
+    {title:"Pazarlar",html:"<ul><li><strong>Yıldız Pazar</strong>: Piyasa değeri ≥500M TL · ≥3 yıl faaliyet · ≥%25 halka açık</li><li><strong>Ana Pazar</strong>: Orta ölçekli şirketler</li><li><strong>Alt Pazar, Yakın İzleme, Nitelikli Yatırımcı Pazarı</strong></li></ul>"},
+    {title:"Kritik Rakamlar",html:"<div class='tag-row'><span class='tag gold'>Takas: T+2</span><span class='tag gold'>Fiyat marjı: ±%10</span><span class='tag gold'>Tek fiyat: ±%20</span><span class='tag gold'>Seans: 10:00–18:00</span></div><div class='hl-box'>VBTS = Anormal fiyat hareketlerinde devreye giren güvenlik sistemi.</div>"},
+  ],
+  borclanma:[
+    {title:"Pazarlar Özeti",html:"<ul><li><strong>Kesin Alım Satım</strong>: Min. emir 10.000 TL nominal</li><li><strong>Repo–Ters Repo</strong>: Max. valör 91 gün</li><li><strong>MK Tercihli Repo</strong>: Belirli kıymet teminatı</li><li><strong>Nitelikli Yatırımcıya İhraç</strong>: Sadece nitelikli yatırımcı</li></ul>"},
+    {title:"Önemli Noktalar",html:"<div class='tag-row'><span class='tag blue'>ISIN = TR ile başlar</span><span class='tag blue'>Max repo = 91 gün</span><span class='tag blue'>Min emir = 10.000 TL</span></div><p style='margin-top:8px'><strong>Piyasa yapıcılığı</strong>: Seçilmiş DİBS'ler için sürekli alış-satış kotasyonu zorunluluğu.</p>"},
+  ],
+  para:[
+    {title:"BPP Temel Bilgiler",html:"<ul><li><strong>Katılımcılar</strong>: Bankalar, aracı kurumlar, Takasbank</li><li><strong>Para birimi</strong>: Türk Lirası</li><li><strong>Seans</strong>: 09:30–12:00 ve 13:00–17:00</li><li><strong>Takas valörü</strong>: T+0 (aynı gün)</li><li><strong>Teminat</strong>: İşlem öncesinde zorunlu</li></ul><div class='hl-box'>BPP'de takas T+0'dır — diğer piyasalara göre fark buradadır.</div>"},
+  ],
+  swap:[
+    {title:"Swap Piyasası Özeti",html:"<ul><li><strong>Amaç</strong>: Para birimlerinin organize değişimi</li><li><strong>Pazarlar</strong>: Para Swap + Kıymetli Madenler Swap</li></ul><div class='tag-row'><span class='tag'>Başlangıç valörü</span><span class='tag'>Bitiş valörü</span><span class='tag'>Döviz miktarı</span><span class='tag'>Swap puanı</span><span class='tag'>Döviz kuru</span></div><div class='hl-box'>TL karşılığı döviz satım emirlerinde en yüksek swap puanı önceliği alır.</div>"},
+  ],
+  viop:[
+    {title:"Teminat Sistemi",html:"<ul><li><strong>Başlangıç teminatı</strong>: Pozisyon açılırken yatırılan</li><li><strong>Sürdürme teminatı</strong>: Bu seviyenin altına düşülünce → margin call</li></ul>"},
+    {title:"Opsiyon Tipleri",html:"<ul><li><strong>Call (Alım)</strong>: Belirlenen fiyattan alma hakkı</li><li><strong>Put (Satım)</strong>: Belirlenen fiyattan satma hakkı</li><li><strong>Avrupa tipi</strong>: Sadece vade sonunda kullanılır</li><li><strong>Amerikan tipi</strong>: Vadeye kadar her an kullanılır</li></ul><div class='tag-row'><span class='tag gold'>Günlük limit: ±%10</span><span class='tag gold'>Futures = Yükümlülük</span><span class='tag gold'>Opsiyon = Hak</span></div><div class='hl-box'>Vadeli işlem ≠ Opsiyon: vadeli işlemde her iki taraf yükümlüdür; opsiyonda yalnızca yazar (satan) yükümlüdür.</div>"},
+  ],
+  tcmb:[
+    {title:"Para Politikası Araçları",html:"<ul><li><strong>Politika faizi</strong>: Haftalık repo faizi — temel araç</li><li><strong>Faiz koridoru</strong>: Gecelik borç alma (alt) – borç verme (üst)</li><li><strong>APİ</strong>: DİBS alım-satımı, repo, ters repo</li><li><strong>Zorunlu karşılıklar</strong>: Bankaların TCMB nezdinde tuttuğu asgari tutar</li></ul><div class='hl-box'>Türkiye → Doğrudan Enflasyon Hedeflemesi stratejisi.</div>"},
+  ],
+  takasbank:[
+    {title:"Takasbank'ın Rolleri",html:"<ul><li><strong>MKT</strong>: Karşı taraf riskini üstlenir</li><li><strong>Takas merkezi</strong>: Pay ve türev piyasalarında</li><li><strong>Saklama</strong>: Elektronik kaydi saklama</li></ul><div class='tag-row'><span class='tag gold'>TPP kuruluş: 1996</span><span class='tag gold'>ÖPP = Teminat zorunlu</span></div>"},
+    {title:"TPP vs ÖPP",html:"<ul><li><strong>TPP</strong>: TL kısa vadeli borçlanma — para piyasası, 1996'dan beri</li><li><strong>ÖPP</strong>: Pay senetleri ödünç — açığa satış desteği</li></ul>"},
+  ],
+  tefas:[
+    {title:"TEFAS & BEP",html:"<ul><li>TEFAS kuruluş: <strong>2015</strong></li><li>Valör: genellikle <strong>T+2 veya T+3</strong></li><li><strong>BES devlet katkısı: %25</strong></li><li>Emeklilik yatırım fonları BEP üzerinden işlem görür</li></ul><div class='hl-box'>BES devlet katkısı = %25 — sınavın en sevdiği BES sorusu.</div>"},
+  ],
+};
+
+
+const DD = {
+  finansal:[
+    {q:"Para ve sermaye piyasası farkı nedir?",a:"<p>Temel ayrım <strong>vadedir</strong>:</p><ul><li><strong>Para piyasası</strong>: 1 yıldan kısa vadeli araçlar. Hazine Bonosu, repo, finansman bonosu.</li><li><strong>Sermaye piyasası</strong>: 1 yıldan uzun vadeli araçlar. Hisse senedi, tahvil.</li></ul><div class='note'>Pratik kural: 1 yıl altı = para piyasası. 1 yıl üstü = sermaye piyasası.</div>"},
+    {q:"Birincil ve ikincil piyasa farkı nedir?",a:"<ul><li><strong>Birincil piyasa</strong>: Menkul kıymet ilk kez ihraç edilir. Fon ihraçcıya gider. Halka arz örnek.</li><li><strong>İkincil piyasa</strong>: Mevcut kıymetler yatırımcılar arasında alınıp satılır. Borsa İstanbul ikincil piyasadır.</li></ul>"},
+  ],
+  borsa:[
+    {q:"Yönetim Kurulu üye sayısı ve görev süresi?",a:"<ul><li>Minimum <strong>5</strong>, maksimum <strong>9</strong> üye</li><li>Görev süresi: <strong>3 yıl</strong></li><li>Genel Müdür: <strong>doğal üye</strong></li></ul>"},
+    {q:"Kotasyon ve kottan çıkarma nedir?",a:"<p><strong>Kotasyon</strong>: Mali tablolar, faaliyet süresi ve halka açıklık oranı gibi şartları sağlayan menkul kıymetin Borsa listelerine alınmasıdır.</p><p><strong>Kottan çıkarma</strong>: Şartların sağlanamaması veya talep üzerine gerçekleşir. Kottan çıkan şirket Borsa'da işlem göremez.</p>"},
+  ],
+  pay:[
+    {q:"VBTS nasıl çalışır?",a:"<p><strong>VBTS</strong>, bir hisse senedinde kısa sürede anormal büyüklükte fiyat hareketi tespit edildiğinde otomatik devreye girer. İşlemleri geçici olarak durdurabilir veya fiyat adımlarını değiştirebilir.</p><div class='note'>VBTS = borsanın circuit breaker sistemi.</div>"},
+    {q:"Takas süresi neden T+2?",a:"<p>T+2; alıcının ödemeyi yapması ve satıcının menkul kıymeti teslim etmesi için 2 iş günü tanındığı anlamına gelir. Takasbank bu süreçte MKT sıfatıyla karşı taraf riskini üstlenir.</p>"},
+  ],
+  borclanma:[
+    {q:"Repo ve ters repo arasındaki fark?",a:"<p><strong>Repo</strong>: Satıcı menkul kıymeti bugün satar, belirli tarihte geri almayı taahhüt eder. Borçlanan taraf.</p><p><strong>Ters repo</strong>: Alıcı tarafın bakışıdır. Geçici olarak menkul kıymet alır, vade sonunda iade eder, faiz kazanır.</p><div class='note'>Repo = fon alan · Ters repo = fon veren.</div>"},
+    {q:"Piyasa yapıcılığı sistemi nasıl çalışır?",a:"<p>Hazine ile protokol imzalayan bankalar, seçilmiş DİBS'ler için <strong>sürekli alış ve satış fiyatı</strong> açıklamak zorundadır. Bu sayede söz konusu tahvillerde daima alıcı ve satıcı bulunur.</p>"},
+  ],
+  para:[
+    {q:"BPP ile bankalararası piyasa farkı?",a:"<p><strong>BPP</strong>: Borsa İstanbul bünyesinde, organize, T+0 valör, teminat zorunlu.</p><p><strong>Bankalararası piyasa</strong>: Bankalar arasında tezgah üstü, TCMB belirleyici aktör.</p>"},
+  ],
+  swap:[
+    {q:"Swap puanı (swap point) nedir?",a:"<p>Bir dövizin spot kuru ile forward kuru arasındaki farktır. İki ülke arasındaki faiz farkını yansıtır. Para Swap Pazarı'nda emirler bu puan üzerinden eşleşir.</p>"},
+  ],
+  viop:[
+    {q:"Margin call (teminat tamamlama) nasıl çalışır?",a:"<p>Pozisyon açılırken <strong>başlangıç teminatı</strong> yatırılır. Piyasa aleyhte hareket edince hesap değeri düşer. Hesap <strong>sürdürme teminatının</strong> altına indiğinde çağrı yapılır.</p><p>Süre içinde tamamlanmazsa açık pozisyonlar <strong>zorla kapatılır</strong>.</p><div class='note'>Başlangıç teminatı > Sürdürme teminatı. Sürdürme seviyesine düşüldüğünde çağrı yapılır.</div>"},
+    {q:"Call ve put opsiyon farkı?",a:"<ul><li><strong>Call</strong>: Belirlenen fiyattan satın alma hakkı. Fiyat yükseleceğinde değer kazanır.</li><li><strong>Put</strong>: Belirlenen fiyattan satma hakkı. Fiyat düşeceğinde değer kazanır.</li></ul><div class='note'>Opsiyon sahibi kullanmak zorunda değildir — hak ihtiyaridir. Yazan (satan) taraf yükümlüdür.</div>"},
+  ],
+  tcmb:[
+    {q:"APİ nasıl çalışır?",a:"<ul><li><strong>DİBS satışı / Ters repo</strong>: Piyasadan para çekmek → sıkılaştırma</li><li><strong>DİBS alımı / Repo</strong>: Piyasaya para vermek → gevşetme</li></ul>"},
+    {q:"Zorunlu karşılık nedir?",a:"<p>Bankalar, topladıkları mevduatın belirli yüzdesini TCMB nezdinde tutmak zorundadır. Oran artarsa bankalar daha az kredi açar (sıkılaştırıcı). Düşürülürse daha fazla kredi açılır (gevşetici).</p>"},
+  ],
+  takasbank:[
+    {q:"MKT ne sağlar?",a:"<p>Takasbank her işlemde araya girerek alıcıya karşı satıcı, satıcıya karşı alıcı olur. Bir tarafın yükümlülüğünü yerine getirememesi durumunda diğer taraf zarar görmez. Karşı taraf riski bireylerden MKT'ye taşınır.</p>"},
+    {q:"TPP ile ÖPP farkı nedir?",a:"<ul><li><strong>TPP</strong>: TL kısa vadeli borçlanma. 1996'dan beri aktif.</li><li><strong>ÖPP</strong>: Pay senetleri ödünç. Açığa satış yapacaklar buradan pay temin eder.</li></ul>"},
+  ],
+  tefas:[
+    {q:"TEFAS ile doğrudan fon alımı farkı?",a:"<p><strong>TEFAS öncesi</strong>: Yatırımcı yalnızca kendi bankasının fonlarına erişebiliyordu.</p><p><strong>TEFAS sonrası</strong>: Tek platform üzerinden yüzlerce fona erişim. Rekabet ve şeffaflık arttı.</p>"},
+    {q:"BES devlet katkısı nasıl hesaplanır?",a:"<p>Katkı payının <strong>%25'i</strong> devlet tarafından hesaba yatırılır. Örnek: 10.000 TL katkıya devlet 2.500 TL ekler.</p><div class='note'>%25 devlet katkısı — sınavın en sevdiği BES sorusudur.</div>"},
+  ],
+};
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+
+
 // ═══════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════
