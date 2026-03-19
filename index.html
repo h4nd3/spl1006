@@ -788,13 +788,15 @@ function pickQuestions(chId) {
   const hard = pool.filter(q => q.v === 3).sort(() => Math.random()-0.5);
   const selected = [
     ...easy.slice(0, 3),
-    ...mid.slice(0, 4),
-    ...hard.slice(0, 3),
+    ...mid.slice(0, 3),
+    ...hard.slice(0, 4),
   ];
-  // Eğer 10'a ulaşamazsa kalan havuzdan tamamla
-  const all = pool.filter(q => !selected.includes(q)).sort(() => Math.random()-0.5);
-  while (selected.length < 10 && all.length > 0) selected.push(all.shift());
-  return selected.sort(() => Math.random()-0.5);
+  if (selected.length < 10) {
+    const used = new Set(selected);
+    const rest = pool.filter(q => !used.has(q)).sort(() => Math.random()-0.5);
+    while (selected.length < 10 && rest.length > 0) selected.push(rest.shift());
+  }
+  return selected.sort(() => Math.random()-0.5).slice(0, 10);
 }
 const Q = { get finansal(){ return pickQuestions('finansal'); }, get borsa(){ return pickQuestions('borsa'); }, get pay(){ return pickQuestions('pay'); }, get borclanma(){ return pickQuestions('borclanma'); }, get para(){ return pickQuestions('para'); }, get swap(){ return pickQuestions('swap'); }, get viop(){ return pickQuestions('viop'); }, get tcmb(){ return pickQuestions('tcmb'); }, get takasbank(){ return pickQuestions('takasbank'); }, get tefas(){ return pickQuestions('tefas'); }, };
 
