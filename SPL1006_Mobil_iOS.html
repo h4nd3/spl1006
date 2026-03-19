@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="SPL 1006">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#F5F0E8">
+<title>SPL 1006</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F0E8;
+  --surface: #FEFCF7;
+  --surface2: #F0EBE0;
+  --border: #DDD5C5;
+  --border2: #C8BEA8;
+  --text: #2C2416;
+  --text2: #5C5040;
+  --text3: #8C7E6A;
+  --gold: #9B6F2F;
+  --gold-light: #B8882A;
+  --gold-bg: #FDF3E3;
+  --gold-border: #E8C878;
+  --sage: #4A7C5F;
+  --sage-bg: #EBF4EE;
+  --sage-border: #A8CDB8;
+  --rose: #B84C4C;
+  --rose-bg: #FBF0F0;
+  --rose-border: #E8AAAA;
+  --blue: #3A6B99;
+  --blue-bg: #EEF4FB;
+  --blue-border: #A8C8E8;
+  --lav: #6B5B9A;
+  --lav-bg: #F2EFF8;
+  --lav-border: #C0B0E0;
+  --r: 14px;
+  --r-sm: 10px;
+  --sh: 0 2px 12px rgba(100,80,40,0.08);
+  --sh-md: 0 6px 24px rgba(100,80,40,0.14);
+  --nav-h: 64px;
+  --top-h: 56px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bot: env(safe-area-inset-bottom, 0px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { height: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', -apple-system, sans-serif;
+  font-size: 15px;
+  line-height: 1.55;
+  overscroll-behavior: none;
+}
+
+/* ── STRUCTURE ── */
+#app { display: flex; flex-direction: column; height: 100%; }
+
+/* ── TOP BAR ── */
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: calc(var(--safe-top) + 10px) 18px 10px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 30;
+}
+.tb-row { display: flex; align-items: center; justify-content: space-between; }
+.tb-title { font-family: 'Lora', serif; font-size: 18px; font-weight: 600; color: var(--gold); }
+.tb-sub { font-size: 11px; color: var(--text3); letter-spacing: 0.8px; margin-top: 1px; }
+.tb-stats { display: flex; gap: 14px; align-items: center; }
+.tb-stat { text-align: center; }
+.tb-val { font-family: 'JetBrains Mono', monospace; font-size: 16px; font-weight: 500; color: var(--text); display: block; }
+.tb-lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; }
+
+/* ── SCROLL AREA ── */
+.scroll-area {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  padding: 16px 16px calc(var(--nav-h) + var(--safe-bot) + 16px);
+}
+
+/* ── BOTTOM NAV ── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: calc(var(--nav-h) + var(--safe-bot));
+  padding-bottom: var(--safe-bot);
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 40;
+  box-shadow: 0 -4px 20px rgba(100,80,40,0.08);
+}
+.nav-tab {
+  flex: 1;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 4px; cursor: pointer;
+  color: var(--text3);
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: color 0.18s;
+  padding: 8px 4px;
+  -webkit-user-select: none; user-select: none;
+}
+.nav-tab.active { color: var(--gold); }
+.nav-tab:active { opacity: 0.7; }
+.nav-ico { font-size: 20px; line-height: 1; }
+
+/* ── SCREENS ── */
+.screen { display: none; }
+.screen.active { display: block; }
+
+/* ── CHAPTER LIST SCREEN ── */
+.ch-grid { display: flex; flex-direction: column; gap: 10px; }
+.ch-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--sh);
+  cursor: pointer;
+  transition: all 0.18s;
+  -webkit-user-select: none; user-select: none;
+  position: relative;
+  overflow: hidden;
+}
+.ch-card::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0;
+  width: 4px;
+  background: var(--border2);
+  transition: background 0.2s;
+}
+.ch-card.active::before { background: var(--gold); }
+.ch-card:active { transform: scale(0.98); background: var(--gold-bg); }
+.ch-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px; color: var(--text3);
+  min-width: 22px;
+}
+.ch-info { flex: 1; min-width: 0; }
+.ch-name { font-size: 14px; font-weight: 500; color: var(--text); }
+.ch-sub { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.ch-prog-wrap { margin-top: 6px; }
+.ch-prog-bar { height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.ch-prog-fill { height: 100%; background: var(--sage); border-radius: 2px; transition: width 0.5s; }
+.ch-arrow { color: var(--text3); font-size: 16px; }
+
+/* ── STUDY SCREEN ── */
+.study-header {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  box-shadow: var(--sh);
+}
+.sh-top { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.sh-back {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: var(--surface2); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; cursor: pointer; color: var(--text2);
+  flex-shrink: 0;
+}
+.sh-back:active { opacity: 0.6; }
+.sh-title { font-family: 'Lora', serif; font-size: 16px; font-weight: 600; color: var(--gold); }
+.sh-sub { font-size: 12px; color: var(--text3); margin-top: 1px; }
+.mode-row { display: flex; gap: 6px; }
+.mtab {
+  flex: 1;
+  padding: 9px 4px;
+  border-radius: var(--r-sm);
+  border: 1px solid var(--border);
+  background: var(--surface2);
+  color: var(--text3);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer; text-align: center;
+  transition: all 0.18s;
+  -webkit-user-select: none; user-select: none;
+}
+.mtab:active { opacity: 0.7; }
+.mtab.active { background: var(--gold-bg); color: var(--gold); border-color: var(--gold-border); }
+
+/* ── QUIZ ── */
+.quiz-wrap { }
+.quiz-meta {
+  display: flex; align-items: center; gap: 10px;
+  margin-bottom: 14px;
+}
+.qm-count { font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text3); }
+.qm-bar { flex: 1; height: 5px; background: var(--border); border-radius: 3px; overflow: hidden; }
+.qm-fill { height: 100%; background: linear-gradient(90deg, var(--sage), var(--gold)); border-radius: 3px; transition: width 0.4s; }
+.score-pill {
+  background: var(--gold-bg); border: 1px solid var(--gold-border);
+  color: var(--gold); font-size: 12px; font-weight: 600;
+  padding: 4px 12px; border-radius: 20px; white-space: nowrap;
+}
+
+.q-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  margin-bottom: 12px;
+  box-shadow: var(--sh);
+}
+.q-text { font-size: 15px; line-height: 1.7; color: var(--text); margin-bottom: 4px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.opt {
+  display: flex; align-items: flex-start; gap: 12px;
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 14px 14px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px; color: var(--text);
+  line-height: 1.5;
+  text-align: left;
+  width: 100%;
+  transition: all 0.18s;
+  -webkit-user-select: none; user-select: none;
+  min-height: 52px;
+}
+.opt:active:not(:disabled) { transform: scale(0.98); background: var(--gold-bg); }
+.opt.correct { border-color: var(--sage-border); background: var(--sage-bg); color: var(--sage); }
+.opt.wrong { border-color: var(--rose-border); background: var(--rose-bg); color: var(--rose); }
+.opt:disabled { cursor: default; }
+.opt-ltr {
+  width: 28px; height: 28px; border-radius: 8px;
+  background: var(--border); color: var(--text3);
+  font-size: 11px; font-weight: 600;
+  font-family: 'JetBrains Mono', monospace;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.opt.correct .opt-ltr { background: var(--sage); color: #fff; }
+.opt.wrong .opt-ltr { background: var(--rose); color: #fff; }
+
+.exp-box {
+  background: var(--blue-bg);
+  border: 1px solid var(--blue-border);
+  border-left: 3px solid var(--blue);
+  border-radius: var(--r-sm);
+  padding: 14px;
+  font-size: 13px; line-height: 1.7;
+  color: var(--text2);
+  display: none; margin-top: 10px;
+  animation: fadeUp 0.25s ease;
+}
+.exp-box.show { display: block; }
+.exp-tag { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--blue); font-weight: 600; margin-bottom: 5px; }
+
+@keyframes fadeUp { from { opacity:0; transform:translateY(6px); } to { opacity:1; transform:none; } }
+
+.quiz-btns {
+  display: flex; gap: 10px; margin-top: 14px;
+}
+.btn {
+  padding: 14px 20px; border-radius: var(--r-sm);
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none;
+  -webkit-user-select: none; user-select: none;
+  min-height: 50px;
+  transition: all 0.18s;
+}
+.btn:active { transform: scale(0.97); }
+.btn-gold { background: var(--gold); color: #fff; flex: 1; }
+.btn-gold:active { background: var(--gold-light); }
+.btn-outline { background: var(--surface2); border: 1px solid var(--border2); color: var(--text2); }
+
+/* ── RESULT ── */
+.result-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 36px 20px;
+  text-align: center;
+  box-shadow: var(--sh);
+}
+.res-icon { font-size: 56px; margin-bottom: 14px; }
+.res-title { font-family: 'Lora', serif; font-size: 22px; color: var(--text); margin-bottom: 8px; }
+.res-sub { color: var(--text2); font-size: 14px; margin-bottom: 24px; }
+.res-bar-wrap { max-width: 280px; margin: 0 auto 28px; }
+.res-bar { height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+.res-fill { height: 100%; border-radius: 4px; transition: width 1s ease; }
+
+/* ── SUMMARY ── */
+.summary-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 16px;
+  box-shadow: var(--sh);
+  margin-bottom: 12px;
+}
+.summary-card h3 {
+  font-family: 'Lora', serif; font-size: 16px; color: var(--gold);
+  margin: 0 0 10px; padding-bottom: 8px;
+  border-bottom: 1px solid var(--gold-border);
+}
+.summary-card ul { padding-left: 18px; }
+.summary-card li { margin-bottom: 7px; font-size: 14px; line-height: 1.6; }
+.summary-card p { font-size: 14px; line-height: 1.7; margin-bottom: 8px; }
+.summary-card strong { color: var(--text); font-weight: 600; }
+.hl-box {
+  background: var(--gold-bg); border: 1px solid var(--gold-border);
+  border-radius: 8px; padding: 11px 14px;
+  font-size: 13px; color: var(--gold); font-weight: 500;
+  margin: 10px 0; line-height: 1.5;
+}
+.hl-box::before { content: "★ "; }
+.info-box {
+  background: var(--lav-bg); border: 1px solid var(--lav-border);
+  border-left: 3px solid var(--lav); border-radius: 8px;
+  padding: 11px 14px; font-size: 13px; color: var(--text2);
+  margin: 10px 0; line-height: 1.6;
+}
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+.tag {
+  background: var(--sage-bg); border: 1px solid var(--sage-border);
+  color: var(--sage); font-size: 12px; padding: 4px 10px; border-radius: 20px;
+}
+.tag.gold { background: var(--gold-bg); border-color: var(--gold-border); color: var(--gold); }
+.tag.blue { background: var(--blue-bg); border-color: var(--blue-border); color: var(--blue); }
+
+/* ── DEEPDIVE ── */
+.dd-list { display: flex; flex-direction: column; gap: 10px; }
+.dd-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--sh);
+}
+.dd-q {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 15px 16px;
+  cursor: pointer;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  gap: 10px;
+  -webkit-user-select: none; user-select: none;
+  min-height: 52px;
+}
+.dd-q:active { background: var(--gold-bg); }
+.dd-q-text { flex: 1; line-height: 1.45; }
+.dd-chevron { color: var(--text3); font-size: 14px; transition: transform 0.2s; flex-shrink: 0; }
+.dd-item.open .dd-chevron { transform: rotate(90deg); color: var(--gold); }
+.dd-item.open .dd-q { color: var(--gold); background: var(--gold-bg); border-bottom: 1px solid var(--gold-border); }
+.dd-ans {
+  display: none;
+  padding: 15px 16px;
+  font-size: 14px; line-height: 1.75; color: var(--text2);
+  background: var(--surface);
+}
+.dd-item.open .dd-ans { display: block; animation: fadeUp 0.2s ease; }
+.dd-ans h4 { font-family: 'Lora', serif; font-size: 15px; color: var(--gold); margin: 14px 0 7px; }
+.dd-ans h4:first-child { margin-top: 0; }
+.dd-ans strong { color: var(--text); font-weight: 600; }
+.dd-ans ul { padding-left: 18px; }
+.dd-ans li { margin-bottom: 6px; }
+.dd-ans .note {
+  background: var(--gold-bg); border: 1px solid var(--gold-border);
+  border-radius: 8px; padding: 10px 13px;
+  font-size: 13px; color: var(--gold); margin: 10px 0; line-height: 1.5;
+}
+
+/* ── TIMER SCREEN ── */
+.timer-screen { }
+.timer-main {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 30px 20px;
+  text-align: center;
+  box-shadow: var(--sh);
+  margin-bottom: 16px;
+}
+.timer-ring-wrap { position: relative; width: 160px; height: 160px; margin: 0 auto 20px; }
+.timer-ring-wrap svg { transform: rotate(-90deg); }
+.tr-bg { stroke: var(--border); fill: none; stroke-width: 8; }
+.tr-fill { stroke: var(--gold); fill: none; stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+.tr-fill.brk { stroke: var(--sage); }
+.timer-center { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.t-num { font-family: 'JetBrains Mono', monospace; font-size: 36px; font-weight: 500; color: var(--text); }
+.t-type { font-size: 10px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--text3); margin-top: 4px; }
+.timer-label { font-size: 13px; color: var(--text2); margin-bottom: 20px; }
+.timer-btns { display: flex; gap: 12px; justify-content: center; }
+.tbtn {
+  padding: 14px 28px;
+  border-radius: var(--r-sm);
+  border: 1.5px solid var(--border2);
+  background: var(--surface2); color: var(--text2);
+  font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600;
+  cursor: pointer; min-height: 50px; min-width: 100px;
+  -webkit-user-select: none; user-select: none;
+  transition: all 0.18s;
+}
+.tbtn:active { opacity: 0.7; transform: scale(0.97); }
+.tbtn.active { background: var(--gold); color: #fff; border-color: var(--gold); }
+.session-dots { display: flex; gap: 8px; justify-content: center; margin-top: 18px; }
+.sdot { width: 10px; height: 10px; border-radius: 50%; background: var(--border2); transition: background 0.3s; }
+.sdot.done { background: var(--gold); }
+
+.timer-stats-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 12px; margin-bottom: 16px;
+}
+.ts-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px;
+  text-align: center; box-shadow: var(--sh);
+}
+.ts-val { font-family: 'JetBrains Mono', monospace; font-size: 28px; font-weight: 500; color: var(--gold); display: block; }
+.ts-lbl { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.8px; }
+
+.pomodoro-tip {
+  background: var(--lav-bg); border: 1px solid var(--lav-border);
+  border-radius: var(--r); padding: 16px;
+  font-size: 13px; color: var(--text2); line-height: 1.7;
+  box-shadow: var(--sh);
+}
+.pomodoro-tip strong { color: var(--lav); }
+
+/* ── WELCOME ── */
+.welcome-card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 24px 18px;
+  text-align: center; box-shadow: var(--sh); margin-bottom: 12px;
+}
+.welcome-card h2 { font-family: 'Lora', serif; font-size: 20px; color: var(--gold); margin-bottom: 8px; }
+.welcome-card p { font-size: 14px; color: var(--text2); line-height: 1.65; }
+.hint-list { display: flex; flex-direction: column; gap: 10px; margin-top: 16px; }
+.hint-row {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: var(--r-sm); padding: 13px;
+}
+.hint-ico { font-size: 24px; flex-shrink: 0; }
+.hint-t { font-size: 13px; font-weight: 600; color: var(--text); }
+.hint-d { font-size: 12px; color: var(--text3); margin-top: 2px; }
+
+/* ── TOAST ── */
+.toast {
+  position: fixed;
+  bottom: calc(var(--nav-h) + var(--safe-bot) + 12px);
+  left: 50%; transform: translateX(-50%) translateY(10px);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 24px; padding: 10px 22px;
+  font-size: 14px; font-weight: 500; color: var(--text);
+  box-shadow: var(--sh-md);
+  z-index: 100; opacity: 0;
+  transition: all 0.25s; pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.ok { border-color: var(--sage-border); color: var(--sage); }
+.toast.err { border-color: var(--rose-border); color: var(--rose); }
+
+/* ── LOADING ── */
+.loading { text-align: center; padding: 60px 20px; color: var(--text3); font-size: 14px; }
+.loading::before { content: ''; display: block; width: 32px; height: 32px; border: 2px solid var(--border); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <div class="topbar">
+    <div class="tb-row">
+      <div>
+        <div class="tb-title">SPL 1006</div>
+        <div class="tb-sub">Finansal Piyasalar</div>
+      </div>
+      <div class="tb-stats">
+        <div class="tb-stat"><span class="tb-val" id="s-q">0</span><span class="tb-lbl">Soru</span></div>
+        <div class="tb-stat"><span class="tb-val" id="s-d">0</span><span class="tb-lbl">Doğru</span></div>
+        <div class="tb-stat"><span class="tb-val" id="s-r">—</span><span class="tb-lbl">Oran</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-area" id="scroll-area">
+
+    <!-- SCREEN: CHAPTERS -->
+    <div class="screen active" id="scr-chapters">
+      <div class="welcome-card">
+        <h2>Merhaba 👋</h2>
+        <p>Bir konu seçin. Her bölümde soru çöz, özet oku ve dip detay modları seni bekliyor.</p>
+        <div class="hint-list">
+          <div class="hint-row"><span class="hint-ico">❓</span><div><div class="hint-t">Soru Çöz</div><div class="hint-d">Gerçek sınav tarzı sorular, açıklamalı</div></div></div>
+          <div class="hint-row"><span class="hint-ico">📋</span><div><div class="hint-t">Özet</div><div class="hint-d">Kritik bilgiler, rakamlar, sınav ipuçları</div></div></div>
+          <div class="hint-row"><span class="hint-ico">🔍</span><div><div class="hint-t">Dip Detay</div><div class="hint-d">Aklına takılan konuları detaylı öğren</div></div></div>
+        </div>
+      </div>
+      <div class="ch-grid" id="ch-grid"></div>
+    </div>
+
+    <!-- SCREEN: STUDY -->
+    <div class="screen" id="scr-study">
+      <div class="study-header">
+        <div class="sh-top">
+          <div class="sh-back" onclick="backToChapters()">←</div>
+          <div>
+            <div class="sh-title" id="sh-title">—</div>
+            <div class="sh-sub" id="sh-sub">—</div>
+          </div>
+        </div>
+        <div class="mode-row">
+          <button class="mtab active" id="tab-quiz" onclick="switchMode('quiz')">❓ Sorular</button>
+          <button class="mtab" id="tab-summary" onclick="switchMode('summary')">📋 Özet</button>
+          <button class="mtab" id="tab-deepdive" onclick="switchMode('deepdive')">🔍 Detay</button>
+        </div>
+      </div>
+      <div id="study-body"></div>
+    </div>
+
+    <!-- SCREEN: TIMER -->
+    <div class="screen" id="scr-timer">
+      <div class="timer-main">
+        <div class="timer-ring-wrap">
+          <svg viewBox="0 0 160 160" width="160" height="160">
+            <circle class="tr-bg" cx="80" cy="80" r="68"/>
+            <circle class="tr-fill" id="tr-fill" cx="80" cy="80" r="68"
+              stroke-dasharray="427.26" stroke-dashoffset="0"/>
+          </svg>
+          <div class="timer-center">
+            <span class="t-num" id="t-num">25:00</span>
+            <span class="t-type" id="t-type">ÇALIŞMA</span>
+          </div>
+        </div>
+        <div class="timer-label" id="t-label">Pomodoro Tekniği</div>
+        <div class="timer-btns">
+          <button class="tbtn" id="tbtn-reset" onclick="timerReset()">↺ Sıfırla</button>
+          <button class="tbtn" id="tbtn-start" onclick="timerToggle()">▶ Başlat</button>
+        </div>
+        <div class="session-dots" id="session-dots">
+          <div class="sdot"></div><div class="sdot"></div>
+          <div class="sdot"></div><div class="sdot"></div>
+        </div>
+      </div>
+      <div class="timer-stats-grid">
+        <div class="ts-card"><span class="ts-val" id="ts-p">0</span><span class="ts-lbl">Pomodoro</span></div>
+        <div class="ts-card"><span class="ts-val" id="ts-q">0</span><span class="ts-lbl">Toplam Soru</span></div>
+      </div>
+      <div class="pomodoro-tip">
+        <strong>Pomodoro Tekniği:</strong> 25 dakika odaklanarak çalış, 5 dakika mola ver. Her 4 pomodorodan sonra 15–20 dakika uzun mola. Verimlilik ve hafıza için kanıtlanmış yöntem.
+      </div>
+    </div>
+
+  </div><!-- /scroll-area -->
+
+  <!-- BOTTOM NAV -->
+  <div class="bottom-nav">
+    <div class="nav-tab active" id="nav-chapters" onclick="showScreen('chapters')">
+      <span class="nav-ico">📚</span>
+      <span>Konular</span>
+    </div>
+    <div class="nav-tab" id="nav-study-btn" onclick="showScreen('study')" style="display:none">
+      <span class="nav-ico">✏️</span>
+      <span>Çalış</span>
+    </div>
+    <div class="nav-tab" id="nav-timer" onclick="showScreen('timer')">
+      <span class="nav-ico">⏱</span>
+      <span>Zamanlayıcı</span>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════
+//  DATA
+// ═══════════════════════════════════════
+const CHAPTERS = [
+  { id:'finansal', num:'01', name:'Finansal Piyasalar',   sub:'Para ve Sermaye Piyasaları' },
+  { id:'borsa',    num:'02', name:'Borsa İstanbul',        sub:'Hukuki Yapı & Düzenlemeler' },
+  { id:'pay',      num:'03', name:'Pay Piyasası',          sub:'Hisse Senedi İşlemleri' },
+  { id:'borclanma',num:'04', name:'Borçlanma Araçları',    sub:'Tahvil, Bono, Repo' },
+  { id:'para',     num:'05', name:'Para Piyasası',         sub:'Borsa Para Piyasası' },
+  { id:'swap',     num:'06', name:'Swap Piyasası',         sub:'Döviz & Altın Swapı' },
+  { id:'viop',     num:'07', name:'VİOP',                  sub:'Vadeli İşlem & Opsiyon' },
+  { id:'tcmb',     num:'08', name:'TCMB Piyasaları',       sub:'Merkez Bankası' },
+  { id:'takasbank',num:'09', name:'Takasbank',             sub:'Takas, Saklama, ÖPP, TPP' },
+  { id:'tefas',    num:'10', name:'TEFAS & BEP',           sub:'Fon Platformları' },
+];
+
+const Q = {
+  finansal:[
+    {s:"Finansal piyasaların temel fonksiyonu nedir?",o:["Devletin vergi toplamasını sağlamak","Fon arz edenler ile fon talep edenleri buluşturmak","Merkez Bankası faiz politikasını uygulamak","Enflasyonu kontrol altında tutmak"],d:1,a:"Finansal piyasaların temel fonksiyonu; tasarruf sahipleri ile fon ihtiyacı olan kesimleri buluşturmak ve kaynakların etkin dağılımını sağlamaktır."},
+    {s:"Para ve sermaye piyasaları arasındaki temel fark nedir?",o:["Para piyasaları yalnızca bankalar arasındadır","Para piyasaları 1 yıldan kısa vadeli araçları, sermaye piyasaları 1 yıldan uzun vadeli araçları kapsar","Sermaye piyasaları devlet kurumları tarafından yönetilir","Para piyasasında yalnızca tahvil işlemleri yapılır"],d:1,a:"Para piyasaları kısa vadeli (1 yıldan kısa), sermaye piyasaları uzun vadeli (1 yıldan uzun) araçların işlem gördüğü piyasalardır. Vade farkı temel ayrım kriteridir."},
+    {s:"Aşağıdakilerden hangisi para piyasası aracı DEĞİLDİR?",o:["Hazine Bonosu","Finansman Bonosu","Hisse senedi","Repo"],d:2,a:"Hisse senedi bir sermaye piyasası aracıdır. Para piyasası araçları kısa vadeli araçlardır: Hazine Bonosu, Finansman Bonosu, Banka Bonoları ve Repo bu kapsamdadır."},
+    {s:"Menkul kıymetin ihraçcı tarafından ilk kez ihraç edildiği piyasa hangisidir?",o:["İkincil piyasa","Spot piyasa","Birincil piyasa","Türev piyasa"],d:2,a:"Birincil piyasa, ihraçcıların menkul kıymetlerini yatırımcılara ilk kez sattığı piyasadır. Bu işlemden elde edilen fonlar doğrudan ihraçcıya gider."},
+    {s:"Borsa İstanbul hangi tür piyasadır?",o:["Birincil piyasa","İkincil piyasa","Tezgah üstü piyasa","Para piyasası"],d:1,a:"Borsa İstanbul, daha önce ihraç edilmiş menkul kıymetlerin alınıp satıldığı ikincil piyasanın en önemli örneğidir."},
+    {s:"Aşağıdakilerden hangisi sermaye piyasası aracıdır?",o:["Hazine Bonosu","Finansman Bonosu","Tahvil","Banka Bonosu"],d:2,a:"Tahvil, vadesi 1 yıldan uzun borçlanma aracı olduğu için sermaye piyasası aracıdır. Hazine Bonosu ve Finansman Bonosu para piyasası araçlarıdır."},
+    {s:"Fon arz ve talep edenler doğrudan buluştuğunda hangi piyasa türü oluşur?",o:["Dolaylı finansman piyasası","Doğrudan finansman piyasası","Türev piyasa","Organize piyasa"],d:1,a:"Doğrudan finansman piyasasında fon arz eden ve talep eden taraflar aracısız karşı karşıya gelir. Borsa bu piyasaların organize hâlidir."},
+    {s:"Gelişmiş finansal piyasaların ekonomiye katkısı olmayan hangisidir?",o:["Fonların etkin dağılımını sağlamak","Tasarrufları yatırıma dönüştürmek","Enflasyonu doğrudan kontrol etmek","Risk dağılımını kolaylaştırmak"],d:2,a:"Finansal piyasalar enflasyonu doğrudan kontrol eden bir araç değildir. Ancak fon dağılımını etkinleştirme ve tasarruf-yatırım dönüşümü temel işlevleridir."},
+  ],
+  borsa:[
+    {s:"Borsa İstanbul'da TVF'nin payı yaklaşık kaçtır?",o:["%51","%66","%80,6","%100"],d:2,a:"Borsa İstanbul'da Türkiye Varlık Fonu (TVF) yaklaşık %80,6 oranında pay sahibidir. Nasdaq ise %7 oranında ortak konumundadır."},
+    {s:"Yönetim Kurulu en az kaç, en fazla kaç üyeden oluşur?",o:["En az 3, en fazla 7","En az 5, en fazla 9","En az 7, en fazla 11","En az 9, en fazla 13"],d:1,a:"Borsa İstanbul Yönetim Kurulu en az 5, en fazla 9 üyeden oluşur. Genel Müdür doğal üyedir. Görev süresi 3 yıldır."},
+    {s:"Menkul kıymetin Borsa listelerine alınması işlemine ne denir?",o:["Halka arz","Kotasyon","İhraç","Tescil"],d:1,a:"Kotasyon, bir menkul kıymetin Borsa listelerine alınması işlemidir. Kottan çıkarma ise bu sürecin tersidir."},
+    {s:"Borsa İstanbul'un organları arasında hangisi YER ALMAZ?",o:["Genel Kurul","Yönetim Kurulu","Denetim Kurulu","Komiteler"],d:2,a:"Borsa İstanbul organları: Genel Kurul, Yönetim Kurulu ve Komiteler. 'Denetim Kurulu' Borsa'nın organları arasında yer almaz."},
+    {s:"Borsa üyelerini denetleme yetkisi kime aittir?",o:["Yalnızca SPK'ya","Yalnızca Borsa İstanbul'a","Hem Borsa İstanbul hem SPK'ya","Hazine Müsteşarlığı'na"],d:2,a:"Borsa İstanbul üyelerini denetleme yetkisine sahiptir. SPK ise üst denetim organı olarak tüm sermaye piyasası kurumlarını denetler."},
+    {s:"Borsa İstanbul hangi kanun kapsamında düzenlenir?",o:["Bankacılık Kanunu","Sermaye Piyasası Kanunu","Türk Ticaret Kanunu","Vergi Usul Kanunu"],d:1,a:"Borsa İstanbul'un kuruluş ve faaliyet esasları 6362 sayılı Sermaye Piyasası Kanunu kapsamında düzenlenmektedir."},
+    {s:"Yönetim Kurulu üyelerinin görev süresi kaç yıldır?",o:["1 yıl","2 yıl","3 yıl","5 yıl"],d:2,a:"Borsa İstanbul Yönetim Kurulu üyelerinin görev süresi 3 yıldır."},
+    {s:"Borsa üyesi olmak için ne gerekir?",o:["Yalnızca ticari banka olmak","Yalnızca aracı kurum olmak","SPK lisanslı yatırım kuruluşu olmak","Sigorta şirketi olmak"],d:2,a:"Borsa üyesi olmak için SPK tarafından lisanslanmış yatırım kuruluşu statüsünde bulunmak gerekmektedir."},
+  ],
+  pay:[
+    {s:"Pay Piyasası'nda takas süresi kaç gündür?",o:["T+0","T+1","T+2","T+3"],d:2,a:"Pay Piyasası'nda standart takas süresi T+2'dir. Takasbank bu işlemlerin merkezi takas kurumudur."},
+    {s:"Yıldız Pazar'a kabul için minimum piyasa değeri şartı nedir?",o:["En az 100 milyon TL","En az 250 milyon TL","En az 500 milyon TL","Piyasa değeri şartı yoktur"],d:2,a:"Yıldız Pazar'a kabul için piyasa değeri en az 500 milyon TL olmalıdır. Ayrıca en az 3 yıllık faaliyet ve %25 halka açıklık oranı şartları da aranır."},
+    {s:"VBTS ne zaman devreye girer?",o:["Haftalık bültenler yayımlandığında","Anormal fiyat hareketleri tespit edildiğinde","Seans kapandığında","Yeni şirket kotasyona alındığında"],d:1,a:"VBTS, anormal büyüklükte fiyat hareketleri tespit edildiğinde otomatik devreye giren bir güvenlik sistemidir."},
+    {s:"Sürekli müzayede seansının bitiş saati nedir?",o:["17:00","17:30","18:00","18:30"],d:2,a:"Borsa İstanbul Pay Piyasası sürekli müzayede seansı 10:00-18:00 saatleri arasında gerçekleşir."},
+    {s:"Açığa satış işlemi nedir?",o:["Sahip olunan hisselerin tamamının satılması","Henüz sahip olunmayan hisse senetlerinin satılması","Düşük alıp yüksek satmak","Vadeli piyasada pozisyon almak"],d:1,a:"Açığa satış; yatırımcının elinde bulunmayan hisse senetlerini ödünç alarak ya da yükümlülük üstlenerek satmasıdır."},
+    {s:"Pay Piyasası sürekli müzayedede fiyat marjı nedir?",o:["%5","%10","%15","%20"],d:1,a:"Pay Piyasası sürekli müzayede seansında fiyat marjı baz fiyatın ±%10'udur. Tek fiyat seanslarında ±%20'ye çıkabilir."},
+    {s:"Takasbank'ın Pay Piyasası'ndaki temel rolü nedir?",o:["Hisse senedi fiyatlarını belirlemek","Merkezi takas ve saklama kurumu olarak görev yapmak","Borsa üyeliği denetimini yapmak","Halka arz süreçlerini yönetmek"],d:1,a:"Takasbank Pay Piyasası'nda takas ve saklama hizmetleri sunar. MKT sıfatıyla karşı taraf riskini üstlenir."},
+    {s:"Yıldız Pazar'a kabul için minimum halka açıklık oranı kaçtır?",o:["%10","%15","%20","%25"],d:3,a:"Yıldız Pazar'a kabul şartlarından biri halka açıklık oranının en az %25 olmasıdır."},
+  ],
+  borclanma:[
+    {s:"Kesin Alım Satım Pazarı'nda minimum emir büyüklüğü kaçtır?",o:["1.000 TL nominal","5.000 TL nominal","10.000 TL nominal","100.000 TL nominal"],d:2,a:"Kesin Alım Satım Pazarı'nda minimum emir büyüklüğü 10.000 TL nominal değerdir."},
+    {s:"Repo işleminde geri alım taahhüdü ne anlama gelir?",o:["Satıcı tarafın belirli bir tarihte geri alacağını taahhüt etmesi","Alıcı tarafın geri satacağını taahhüt etmesi","Merkez Bankası'nın müdahale edeceğini ilan etmesi","Devletin bono ihraç edeceğini duyurması"],d:0,a:"Repo işleminde satıcı menkul kıymeti bugün satar ve belirli bir tarihte anlaşılan fiyattan geri almayı taahhüt eder. Menkul kıymet teminatıyla kısa vadeli borçlanmadır."},
+    {s:"Piyasa yapıcıları ne yapmakla yükümlüdür?",o:["Tüm piyasada emir verme zorunluluğu","Belirlenen menkul kıymetler için sürekli alış-satış kotasyonu vermek","Yalnızca hisse senetleri için faaliyet göstermek","Yalnızca VİOP'ta çalışmak"],d:1,a:"Piyasa yapıcıları, Hazine DİBS'leri başta olmak üzere belirlenen menkul kıymetler için sürekli alış ve satış fiyatı açıklamak zorundadır."},
+    {s:"Türkiye'de ihraç edilen menkul kıymetlerin ISIN kodu hangi harflerle başlar?",o:["IS","TK","TR","TU"],d:2,a:"ISIN (International Securities Identification Number) Türkiye'de ihraç edilen menkul kıymetler için TR harfleriyle başlar."},
+    {s:"Repo Ters Repo Pazarı'nda maksimum valör kaç gündür?",o:["30 gün","60 gün","91 gün","180 gün"],d:2,a:"Repo Ters Repo Pazarı'nda işlem vadesi en fazla 91 gündür."},
+    {s:"Nitelikli Yatırımcıya İhraç Pazarı'na kimler katılabilir?",o:["Sadece yabancı yatırımcılar","Sadece nitelikli yatırımcılar","Tüm yatırımcılar","Sadece bankalar"],d:1,a:"Bu pazarda yalnızca SPK mevzuatı kapsamındaki nitelikli yatırımcılar işlem yapabilmektedir."},
+    {s:"DİBS'ler hangi pazarda işlem görür?",o:["Yalnızca Birincil Piyasa","Borçlanma Araçları Kesin Alım Satım Pazarı","Pay Piyasası","Yalnızca tezgah üstü piyasa"],d:1,a:"DİBS'ler, Borsa İstanbul Borçlanma Araçları Piyasası bünyesindeki Kesin Alım Satım Pazarı'nda işlem görür."},
+  ],
+  para:[
+    {s:"BPP'de işlem yapabilecekler arasında hangisi YER ALMAZ?",o:["Bankalar","Aracı kurumlar","Takasbank","Sigorta şirketleri"],d:3,a:"BPP'de Borsa düzenlemeleri uyarınca bankalar, aracı kurumlar ve Takasbank işlem yapabilir. Sigorta şirketleri bu piyasanın doğrudan üyesi değildir."},
+    {s:"BPP işlemlerinde hangi para birimi kullanılır?",o:["ABD Doları","Euro","Türk Lirası","Her ikisi de"],d:2,a:"Borsa Para Piyasası'nda işlemler Türk Lirası fon arz ve talebi üzerine kurgulanmıştır."},
+    {s:"BPP sabah seansı kaçta başlar?",o:["08:30","09:00","09:30","10:00"],d:2,a:"BPP'de sabah seansı 09:30'da başlar ve 12:00'de biter. Öğleden sonra 13:00-17:00 arası işlem yapılır."},
+    {s:"BPP'de işlem öncesinde ne zorunludur?",o:["Kredi notu belgesi","Teminat yatırılması","Sözleşme imzalanması","Her seans için ayrı yetkilendirme"],d:1,a:"BPP'de işlemler gerçekleştirilmeden önce teminat yatırılması zorunludur."},
+    {s:"BPP'de takas valörü nedir?",o:["T+1","T+2","T+0 (aynı gün)","T+3"],d:2,a:"BPP'de işlemler T+0 valörüyle, yani aynı gün takas edilecek şekilde gerçekleşir."},
+  ],
+  swap:[
+    {s:"Borsa İstanbul Swap Piyasası'nın temel amacı nedir?",o:["Hisse senedi takasını kolaylaştırmak","Para birimlerinin birbirine dönüştürülmesini sağlamak","DİBS fiyatlarını belirlemek","Portföy şirketlerini denetlemek"],d:1,a:"Swap Piyasası, para birimlerinin belirlenmiş koşullarda birbiriyle değiştirilmesini sağlayan organize bir piyasadır."},
+    {s:"TL karşılığı döviz satım emirleri hangi öncelik kuralıyla eşleşir?",o:["Zaman önceliği","En yüksek swap puanına sahip emirler önce","Tutara göre öncelik","Rastgele eşleşme"],d:1,a:"TL karşılığı döviz satım swap emirlerinde en yüksek swap puanı olan emirlere öncelik tanınır."},
+    {s:"Swap emirleri hangi parametreler üzerinden iletilir?",o:["Yalnızca faiz oranı ve vade","Başlangıç valörü, bitiş valörü, döviz miktarı, swap puanı ve döviz kuru","Tutar, vade ve teminat oranı","Yalnızca döviz kuru ve miktar"],d:1,a:"Swap emirleri; başlangıç valörü, bitiş valörü, döviz miktarı, swap puanı ve döviz kuru parametreleri üzerinden iletilir."},
+    {s:"Swap Piyasası'nda başlangıç valörü en geç kaç iş günü ileri olabilir?",o:["T+0","T+1","T+2","T+5"],d:1,a:"Swap Piyasası'nda başlangıç valörü T+0 veya T+1 olabilir. Bitiş valörü ise en fazla 1 yıl ileri olabilir."},
+    {s:"Kıymetli Madenler Swap Pazarı'nda hangi araçlar işlem görür?",o:["Yalnızca altın","Altın ve diğer kıymetli madenler","Hisse senedi ve tahvil","Yalnızca döviz"],d:1,a:"Kıymetli Madenler Swap Pazarı'nda altın başta olmak üzere diğer kıymetli madenler üzerinden swap işlemleri yapılır."},
+  ],
+  viop:[
+    {s:"Teminat tamamlama çağrısı (margin call) ne zaman yapılır?",o:["Her seans sonunda","Hesap bakiyesi başlangıç teminatının %80'ine düştüğünde","Hesap bakiyesi sürdürme teminatının altına düştüğünde","Yalnızca yatırımcı talep ettiğinde"],d:2,a:"Hesap bakiyesi sürdürme teminatının altına düştüğünde teminat tamamlama çağrısı yapılır. Yatırımcı tamamlamazsa pozisyonlar zorla kapatılabilir."},
+    {s:"Alım opsiyonu (call option) sahibine ne hakkı tanır?",o:["Dayanak varlığı belirlenen fiyattan satma hakkı","Dayanak varlığı belirlenen fiyattan alma hakkı","Belirlenen tarihte teslim alma yükümlülüğü","Piyasa fiyatından alma yükümlülüğü"],d:1,a:"Call option, sahibine belirlenen kullanım fiyatından dayanak varlığı satın alma hakkı verir; yükümlülük değil, haktır."},
+    {s:"VİOP'ta günlük fiyat değişim limiti genellikle kaçtır?",o:["±%5","±%10","±%15","±%20"],d:1,a:"VİOP'ta sözleşme bazında günlük fiyat değişim limiti genellikle ±%10'dur."},
+    {s:"Avrupa tipi ile Amerikan tipi opsiyon arasındaki fark nedir?",o:["Avrupa tipi yalnızca Avrupa borsalarında işlem görür","Avrupa tipi yalnızca vade sonunda kullanılabilir; Amerikan tipi vadeye kadar her an","Amerikan tipi daha düşük primlidir","Avrupa tipi daha yüksek getiri sağlar"],d:1,a:"Avrupa tipi opsiyonlar yalnızca vade sonunda kullanılabilirken, Amerikan tipi opsiyonlar vade boyunca herhangi bir gün kullanılabilir."},
+    {s:"Vadeli işlem sözleşmesi nedir?",o:["Alım ya da satım hakkı veren sözleşme","Belirlenen vade ve fiyattan dayanak varlığı alma veya satma yükümlülüğü veren sözleşme","Faiz riski azaltmak için kullanılan sözleşme","Yalnızca döviz üzerine yazılan sözleşme"],d:1,a:"Vadeli işlem sözleşmesi; taraflara belirli bir vade sonunda, önceden belirlenmiş fiyattan dayanak varlığı alma veya satma yükümlülüğü getirir."},
+    {s:"Uzlaşma Fiyatı Komitesi'nin görevi nedir?",o:["Yatırımcı şikayetlerini değerlendirmek","Günlük ve vade sonu uzlaşma fiyatlarını tespit etmek","Borsa üyelerinin lisans başvurularını onaylamak","Günlük fiyat limitlerini belirlemek"],d:1,a:"Uzlaşma Fiyatı Komitesi, günlük uzlaşma fiyatı ile vade sonu uzlaşma fiyatının doğru biçimde belirlenmesinden sorumludur."},
+    {s:"Özsermaye Halleri Komitesi ne zaman devreye girer?",o:["Her ay düzenli olarak","Temettü, sermaye artırımı gibi kurumsal olaylar gerçekleştiğinde","Teminat yetersizliğinde","Yeni üye kabulünde"],d:1,a:"Özsermaye Halleri Komitesi, dayanak varlıkta temettü, sermaye artırımı gibi kurumsal olaylar gerçekleştiğinde vadeli işlem sözleşme parametrelerini günceller."},
+  ],
+  tcmb:[
+    {s:"TCMB'nin temel para politikası aracı nedir?",o:["Döviz rezervleri","Haftalık repo faizi (politika faizi)","Zorunlu karşılık oranı","Kamu harcamaları"],d:1,a:"TCMB'nin temel para politikası aracı haftalık repo faiz oranıdır (politika faizi). Bu oran aracılığıyla fon maliyeti ve likiditesi yönetilir."},
+    {s:"APİ (Açık Piyasa İşlemleri) kapsamında TCMB ne yapar?",o:["Vergi toplar","DİBS alım-satımı, repo ve ters repo işlemleri gerçekleştirir","Döviz kuru hedefi belirler","Bankacılık lisanslarını denetler"],d:1,a:"APİ kapsamında TCMB, piyasadaki likiditeyi ayarlamak amacıyla DİBS alım-satımı ile repo ve ters repo işlemleri gerçekleştirir."},
+    {s:"Zorunlu karşılık uygulamasının amacı nedir?",o:["Bankaların kârlılığını artırmak","Bankacılıkta rekabeti sağlamak","Bankaların minimum likidite seviyesini korumalarını sağlamak","Döviz kurunu sabit tutmak"],d:2,a:"Zorunlu karşılıklar, bankaların topladıkları mevduatın belirli bir oranını TCMB nezdinde tutmasını zorunlu kılar. Para arzı ve likidite yönetiminde kullanılan bir araçtır."},
+    {s:"Faiz koridoru ne anlama gelir?",o:["TCMB'nin enflasyon hedef aralığı","TCMB'nin gecelik borç alma ve verme faizleri arasındaki bant","Bankacılık sektörünün net faiz marjı","Kredi-mevduat faizi farkı"],d:1,a:"Faiz koridoru; TCMB'nin gecelik borç alma faizi (alt sınır) ile gecelik borç verme faizi (üst sınır) arasındaki banttır."},
+    {s:"Türkiye hangi para politikası stratejisini uygular?",o:["Döviz kuru hedeflemesi","Para tabanı hedeflemesi","Ara hedefleme","Doğrudan enflasyon hedeflemesi"],d:3,a:"Türkiye, doğrudan enflasyon hedeflemesi stratejisini uygulamaktadır. TCMB kamuoyuna belirli bir enflasyon hedefi ilan eder."},
+  ],
+  takasbank:[
+    {s:"Takasbank'ın MKT fonksiyonu ne anlama gelir?",o:["Piyasadaki en büyük yatırımcı olmak","Alıcıya karşı satıcı, satıcıya karşı alıcı konumuna geçmek","İşlemler için aracılık komisyonu almak","Menkul kıymetlerin fiziksel teslimatını sağlamak"],d:1,a:"Takasbank MKT sıfatıyla her işlemde alıcıya karşı satıcı, satıcıya karşı alıcı konumuna geçer. Karşı taraf riski Takasbank tarafından yönetilir."},
+    {s:"Takasbank Para Piyasası (TPP) ne zaman kurulmuştur?",o:["1985","1990","1996","2001"],d:2,a:"TPP, TL fon fazlası ve ihtiyacı olan üyeleri buluşturan organize bir para piyasası olup 1 Ekim 1996 tarihinde kurulmuştur."},
+    {s:"Ödünç Pay Piyasası'nın (ÖPP) temel fonksiyonu nedir?",o:["Halka arz işlemlerini yönetmek","Pay senetlerinin ödünç verilip alınmasına aracılık etmek","Yabancı yatırımcılara özel fon oluşturmak","Vadeli işlem sözleşmeleri düzenlemek"],d:1,a:"ÖPP, açığa satış yapmak isteyen yatırımcıların pay senetlerini teminat karşılığında ödünç alabildiği organize bir piyasadır."},
+    {s:"ÖPP işlemlerinde teminat zorunlu mudur?",o:["Hayır, isteğe bağlıdır","Evet, zorunludur","Sadece yabancı yatırımcılar için","Yalnızca kurumsal yatırımcılar için"],d:1,a:"Ödünç Pay Piyasası'nda ödünç almak isteyen kurumlar belirlenen tür ve miktarda teminat göstermek zorundadır."},
+    {s:"Takasbank'ta saklama nasıl gerçekleşir?",o:["Menkul kıymetler fiziksel kasada saklanır","Menkul kıymetler elektronik ortamda kaydedilir","Saklama yalnızca MKK tarafından yürütülür","Saklama için ayrıca sözleşme gerekmez"],d:1,a:"Takasbank ve MKK, menkul kıymetlerin elektronik ortamda kayden saklanmasını sağlar. Fiziksel sertifika uygulaması artık kullanılmamaktadır."},
+  ],
+  tefas:[
+    {s:"TEFAS hangi yılda faaliyete geçmiştir?",o:["2010","2013","2015","2018"],d:2,a:"TEFAS, yatırım fonlarının tek platform üzerinden alınıp satılabilmesini sağlamak amacıyla 2015 yılında faaliyete geçmiştir."},
+    {s:"TEFAS'ın yatırımcılara sağladığı temel avantaj nedir?",o:["Yalnızca kendi bankalarından fon alabilirler","Tek platform üzerinden farklı portföy yönetim şirketlerinin fonlarına erişebilirler","Vergi avantajı sağlar","Garantili getiri sunar"],d:1,a:"TEFAS sayesinde yatırımcılar farklı portföy yönetim şirketlerine ait yüzlerce fonu tek platformdan karşılaştırıp alıp satabilir."},
+    {s:"BES'te devlet katkısı oranı kaçtır?",o:["Katkı payının %10'u","Katkı payının %15'i","Katkı payının %25'i","Katkı payının %30'u"],d:2,a:"BES katılımcıları ödedikleri katkı payının %25'i oranında devlet katkısından yararlanır."},
+    {s:"TEFAS'ta fon alım satımının valör süresi nedir?",o:["T+0","T+1","T+2 veya T+3","T+5"],d:2,a:"TEFAS'ta fon alım satım talimatları genellikle T+2 veya T+3 valörüyle işlem görür."},
+    {s:"BEP ne işe yarar?",o:["Yatırım fonlarını halka satar","BES katılımcılarının emeklilik yatırım fonlarını yönetir","Zorunlu emeklilik primlerini toplar","TEFAS ile aynı platformdur"],d:1,a:"BEP, BES kapsamındaki katılımcıların emeklilik yatırım fonlarına yönelik alım satım talimatlarını işleten platformdur."},
+  ],
+};
+
+const SUMMARIES = {
+  finansal:[
+    {title:"Temel Tanımlar",html:"<p><strong>Finansal piyasa</strong>: Fon arz edenler ile fon talep edenlerin karşılaştığı piyasa.</p><ul><li><strong>Para Piyasası</strong>: Vade <strong>1 yıldan kısa</strong></li><li><strong>Sermaye Piyasası</strong>: Vade <strong>1 yıldan uzun</strong></li><li><strong>Birincil Piyasa</strong>: Menkul kıymetin ilk ihracı — fon ihraçcıya gider</li><li><strong>İkincil Piyasa</strong>: Mevcut kıymetlerin alım satımı — Borsa İstanbul</li></ul>"},
+    {title:"Para Piyasası Araçları",html:"<div class='tag-row'><span class='tag'>Hazine Bonosu</span><span class='tag'>Finansman Bonosu</span><span class='tag'>Banka Bonoları</span><span class='tag'>Repo / Ters Repo</span></div><div class='hl-box'>Hisse senedi = sermaye piyasası aracıdır, para piyasası değil.</div>"},
+    {title:"Sınav İpuçları",html:"<div class='info-box'>En sık sorulan: para–sermaye piyasası farkı, hangi araçların hangi kategoride olduğu, birincil/ikincil piyasa tanımları.</div>"},
+  ],
+  borsa:[
+    {title:"Ortaklık & Yönetim",html:"<ul><li>TVF: <strong>~%80,6</strong> · Nasdaq: <strong>%7</strong></li><li>Yönetim Kurulu: en az <strong>5</strong>, en fazla <strong>9</strong> üye</li><li>Görev süresi: <strong>3 yıl</strong></li><li>Genel Müdür: <strong>doğal üye</strong></li></ul>"},
+    {title:"Önemli Kavramlar",html:"<ul><li><strong>Kotasyon</strong>: Menkul kıymetin Borsa listelerine alınması</li><li><strong>Borsa üyesi</strong>: SPK lisanslı yatırım kuruluşları</li><li><strong>Denetim</strong>: Borsa → üyeleri denetler · SPK → Borsa'yı denetler</li></ul><div class='hl-box'>YK = en az 5, en fazla 9 üye, 3 yıl görev — bu rakamlar sınavda çıkar.</div>"},
+  ],
+  pay:[
+    {title:"Pazarlar",html:"<ul><li><strong>Yıldız Pazar</strong>: Piyasa değeri ≥500M TL · ≥3 yıl faaliyet · ≥%25 halka açık</li><li><strong>Ana Pazar</strong>: Orta ölçekli şirketler</li><li><strong>Alt Pazar, Yakın İzleme, Nitelikli Yatırımcı Pazarı</strong></li></ul>"},
+    {title:"Kritik Rakamlar",html:"<div class='tag-row'><span class='tag gold'>Takas: T+2</span><span class='tag gold'>Fiyat marjı: ±%10</span><span class='tag gold'>Tek fiyat: ±%20</span><span class='tag gold'>Seans: 10:00–18:00</span></div><div class='hl-box'>VBTS = Anormal fiyat hareketlerinde devreye giren güvenlik sistemi.</div>"},
+  ],
+  borclanma:[
+    {title:"Pazarlar Özeti",html:"<ul><li><strong>Kesin Alım Satım</strong>: Min. emir 10.000 TL nominal</li><li><strong>Repo–Ters Repo</strong>: Max. valör 91 gün</li><li><strong>MK Tercihli Repo</strong>: Belirli kıymet teminatı</li><li><strong>Nitelikli Yatırımcıya İhraç</strong>: Sadece nitelikli yatırımcı</li></ul>"},
+    {title:"Önemli Noktalar",html:"<div class='tag-row'><span class='tag blue'>ISIN = TR ile başlar</span><span class='tag blue'>Max repo = 91 gün</span><span class='tag blue'>Min emir = 10.000 TL</span></div><p style='margin-top:8px'><strong>Piyasa yapıcılığı</strong>: Seçilmiş DİBS'ler için sürekli alış-satış kotasyonu zorunluluğu.</p>"},
+  ],
+  para:[
+    {title:"BPP Temel Bilgiler",html:"<ul><li><strong>Katılımcılar</strong>: Bankalar, aracı kurumlar, Takasbank</li><li><strong>Para birimi</strong>: Türk Lirası</li><li><strong>Seans</strong>: 09:30–12:00 ve 13:00–17:00</li><li><strong>Takas valörü</strong>: T+0 (aynı gün)</li><li><strong>Teminat</strong>: İşlem öncesinde zorunlu</li></ul><div class='hl-box'>BPP'de takas T+0'dır — diğer piyasalara göre fark buradadır.</div>"},
+  ],
+  swap:[
+    {title:"Swap Piyasası Özeti",html:"<ul><li><strong>Amaç</strong>: Para birimlerinin organize değişimi</li><li><strong>Pazarlar</strong>: Para Swap + Kıymetli Madenler Swap</li></ul><div class='tag-row'><span class='tag'>Başlangıç valörü</span><span class='tag'>Bitiş valörü</span><span class='tag'>Döviz miktarı</span><span class='tag'>Swap puanı</span><span class='tag'>Döviz kuru</span></div><div class='hl-box'>TL karşılığı döviz satım emirlerinde en yüksek swap puanı önceliği alır.</div>"},
+  ],
+  viop:[
+    {title:"Teminat Sistemi",html:"<ul><li><strong>Başlangıç teminatı</strong>: Pozisyon açılırken yatırılan</li><li><strong>Sürdürme teminatı</strong>: Bu seviyenin altına düşülünce → margin call</li></ul>"},
+    {title:"Opsiyon Tipleri",html:"<ul><li><strong>Call (Alım)</strong>: Belirlenen fiyattan alma hakkı</li><li><strong>Put (Satım)</strong>: Belirlenen fiyattan satma hakkı</li><li><strong>Avrupa tipi</strong>: Sadece vade sonunda kullanılır</li><li><strong>Amerikan tipi</strong>: Vadeye kadar her an kullanılır</li></ul><div class='tag-row'><span class='tag gold'>Günlük limit: ±%10</span><span class='tag gold'>Futures = Yükümlülük</span><span class='tag gold'>Opsiyon = Hak</span></div><div class='hl-box'>Vadeli işlem ≠ Opsiyon: vadeli işlemde her iki taraf yükümlüdür; opsiyonda yalnızca yazar (satan) yükümlüdür.</div>"},
+  ],
+  tcmb:[
+    {title:"Para Politikası Araçları",html:"<ul><li><strong>Politika faizi</strong>: Haftalık repo faizi — temel araç</li><li><strong>Faiz koridoru</strong>: Gecelik borç alma (alt) – borç verme (üst)</li><li><strong>APİ</strong>: DİBS alım-satımı, repo, ters repo</li><li><strong>Zorunlu karşılıklar</strong>: Bankaların TCMB nezdinde tuttuğu asgari tutar</li></ul><div class='hl-box'>Türkiye → Doğrudan Enflasyon Hedeflemesi stratejisi.</div>"},
+  ],
+  takasbank:[
+    {title:"Takasbank'ın Rolleri",html:"<ul><li><strong>MKT</strong>: Karşı taraf riskini üstlenir</li><li><strong>Takas merkezi</strong>: Pay ve türev piyasalarında</li><li><strong>Saklama</strong>: Elektronik kaydi saklama</li></ul><div class='tag-row'><span class='tag gold'>TPP kuruluş: 1996</span><span class='tag gold'>ÖPP = Teminat zorunlu</span></div>"},
+    {title:"TPP vs ÖPP",html:"<ul><li><strong>TPP</strong>: TL kısa vadeli borçlanma — para piyasası, 1996'dan beri</li><li><strong>ÖPP</strong>: Pay senetleri ödünç — açığa satış desteği</li></ul>"},
+  ],
+  tefas:[
+    {title:"TEFAS & BEP",html:"<ul><li>TEFAS kuruluş: <strong>2015</strong></li><li>Valör: genellikle <strong>T+2 veya T+3</strong></li><li><strong>BES devlet katkısı: %25</strong></li><li>Emeklilik yatırım fonları BEP üzerinden işlem görür</li></ul><div class='hl-box'>BES devlet katkısı = %25 — sınavın en sevdiği BES sorusu.</div>"},
+  ],
+};
+
+const DD = {
+  finansal:[
+    {q:"Para ve sermaye piyasası farkı nedir?",a:"<p>Temel ayrım <strong>vadedir</strong>:</p><ul><li><strong>Para piyasası</strong>: 1 yıldan kısa vadeli araçlar. Hazine Bonosu, repo, finansman bonosu.</li><li><strong>Sermaye piyasası</strong>: 1 yıldan uzun vadeli araçlar. Hisse senedi, tahvil.</li></ul><div class='note'>Pratik kural: 1 yıl altı = para piyasası. 1 yıl üstü = sermaye piyasası.</div>"},
+    {q:"Birincil ve ikincil piyasa farkı nedir?",a:"<ul><li><strong>Birincil piyasa</strong>: Menkul kıymet ilk kez ihraç edilir. Fon ihraçcıya gider. Halka arz örnek.</li><li><strong>İkincil piyasa</strong>: Mevcut kıymetler yatırımcılar arasında alınıp satılır. Borsa İstanbul ikincil piyasadır.</li></ul>"},
+  ],
+  borsa:[
+    {q:"Yönetim Kurulu üye sayısı ve görev süresi?",a:"<ul><li>Minimum <strong>5</strong>, maksimum <strong>9</strong> üye</li><li>Görev süresi: <strong>3 yıl</strong></li><li>Genel Müdür: <strong>doğal üye</strong></li></ul>"},
+    {q:"Kotasyon ve kottan çıkarma nedir?",a:"<p><strong>Kotasyon</strong>: Mali tablolar, faaliyet süresi ve halka açıklık oranı gibi şartları sağlayan menkul kıymetin Borsa listelerine alınmasıdır.</p><p><strong>Kottan çıkarma</strong>: Şartların sağlanamaması veya talep üzerine gerçekleşir. Kottan çıkan şirket Borsa'da işlem göremez.</p>"},
+  ],
+  pay:[
+    {q:"VBTS nasıl çalışır?",a:"<p><strong>VBTS</strong>, bir hisse senedinde kısa sürede anormal büyüklükte fiyat hareketi tespit edildiğinde otomatik devreye girer. İşlemleri geçici olarak durdurabilir veya fiyat adımlarını değiştirebilir.</p><div class='note'>VBTS = borsanın circuit breaker sistemi.</div>"},
+    {q:"Takas süresi neden T+2?",a:"<p>T+2; alıcının ödemeyi yapması ve satıcının menkul kıymeti teslim etmesi için 2 iş günü tanındığı anlamına gelir. Takasbank bu süreçte MKT sıfatıyla karşı taraf riskini üstlenir.</p>"},
+  ],
+  borclanma:[
+    {q:"Repo ve ters repo arasındaki fark?",a:"<p><strong>Repo</strong>: Satıcı menkul kıymeti bugün satar, belirli tarihte geri almayı taahhüt eder. Borçlanan taraf.</p><p><strong>Ters repo</strong>: Alıcı tarafın bakışıdır. Geçici olarak menkul kıymet alır, vade sonunda iade eder, faiz kazanır.</p><div class='note'>Repo = fon alan · Ters repo = fon veren.</div>"},
+    {q:"Piyasa yapıcılığı sistemi nasıl çalışır?",a:"<p>Hazine ile protokol imzalayan bankalar, seçilmiş DİBS'ler için <strong>sürekli alış ve satış fiyatı</strong> açıklamak zorundadır. Bu sayede söz konusu tahvillerde daima alıcı ve satıcı bulunur.</p>"},
+  ],
+  para:[
+    {q:"BPP ile bankalararası piyasa farkı?",a:"<p><strong>BPP</strong>: Borsa İstanbul bünyesinde, organize, T+0 valör, teminat zorunlu.</p><p><strong>Bankalararası piyasa</strong>: Bankalar arasında tezgah üstü, TCMB belirleyici aktör.</p>"},
+  ],
+  swap:[
+    {q:"Swap puanı (swap point) nedir?",a:"<p>Bir dövizin spot kuru ile forward kuru arasındaki farktır. İki ülke arasındaki faiz farkını yansıtır. Para Swap Pazarı'nda emirler bu puan üzerinden eşleşir.</p>"},
+  ],
+  viop:[
+    {q:"Margin call (teminat tamamlama) nasıl çalışır?",a:"<p>Pozisyon açılırken <strong>başlangıç teminatı</strong> yatırılır. Piyasa aleyhte hareket edince hesap değeri düşer. Hesap <strong>sürdürme teminatının</strong> altına indiğinde çağrı yapılır.</p><p>Süre içinde tamamlanmazsa açık pozisyonlar <strong>zorla kapatılır</strong>.</p><div class='note'>Başlangıç teminatı > Sürdürme teminatı. Sürdürme seviyesine düşüldüğünde çağrı yapılır.</div>"},
+    {q:"Call ve put opsiyon farkı?",a:"<ul><li><strong>Call</strong>: Belirlenen fiyattan satın alma hakkı. Fiyat yükseleceğinde değer kazanır.</li><li><strong>Put</strong>: Belirlenen fiyattan satma hakkı. Fiyat düşeceğinde değer kazanır.</li></ul><div class='note'>Opsiyon sahibi kullanmak zorunda değildir — hak ihtiyaridir. Yazan (satan) taraf yükümlüdür.</div>"},
+  ],
+  tcmb:[
+    {q:"APİ nasıl çalışır?",a:"<ul><li><strong>DİBS satışı / Ters repo</strong>: Piyasadan para çekmek → sıkılaştırma</li><li><strong>DİBS alımı / Repo</strong>: Piyasaya para vermek → gevşetme</li></ul>"},
+    {q:"Zorunlu karşılık nedir?",a:"<p>Bankalar, topladıkları mevduatın belirli yüzdesini TCMB nezdinde tutmak zorundadır. Oran artarsa bankalar daha az kredi açar (sıkılaştırıcı). Düşürülürse daha fazla kredi açılır (gevşetici).</p>"},
+  ],
+  takasbank:[
+    {q:"MKT ne sağlar?",a:"<p>Takasbank her işlemde araya girerek alıcıya karşı satıcı, satıcıya karşı alıcı olur. Bir tarafın yükümlülüğünü yerine getirememesi durumunda diğer taraf zarar görmez. Karşı taraf riski bireylerden MKT'ye taşınır.</p>"},
+    {q:"TPP ile ÖPP farkı nedir?",a:"<ul><li><strong>TPP</strong>: TL kısa vadeli borçlanma. 1996'dan beri aktif.</li><li><strong>ÖPP</strong>: Pay senetleri ödünç. Açığa satış yapacaklar buradan pay temin eder.</li></ul>"},
+  ],
+  tefas:[
+    {q:"TEFAS ile doğrudan fon alımı farkı?",a:"<p><strong>TEFAS öncesi</strong>: Yatırımcı yalnızca kendi bankasının fonlarına erişebiliyordu.</p><p><strong>TEFAS sonrası</strong>: Tek platform üzerinden yüzlerce fona erişim. Rekabet ve şeffaflık arttı.</p>"},
+    {q:"BES devlet katkısı nasıl hesaplanır?",a:"<p>Katkı payının <strong>%25'i</strong> devlet tarafından hesaba yatırılır. Örnek: 10.000 TL katkıya devlet 2.500 TL ekler.</p><div class='note'>%25 devlet katkısı — sınavın en sevdiği BES sorusudur.</div>"},
+  ],
+};
+
+// ═══════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════
+const S = {
+  ch: null, mode: 'quiz', curScreen: 'chapters',
+  stats: { q:0, d:0, p:0 },
+  progress: {},
+  quiz: { idx:0, answered:false, sQ:0, sD:0, order:[] },
+  timer: { s:25*60, running:false, isBreak:false, total:25*60, tick:null },
+};
+try {
+  const sv = JSON.parse(localStorage.getItem('spl_ios') || '{}');
+  if (sv.stats) S.stats = sv.stats;
+  if (sv.progress) S.progress = sv.progress;
+} catch(e){}
+
+// ═══════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════
+function init() {
+  const grid = document.getElementById('ch-grid');
+  grid.innerHTML = CHAPTERS.map(ch => `
+    <div class="ch-card" id="cc-${ch.id}" onclick="openChapter('${ch.id}')">
+      <span class="ch-num">${ch.num}</span>
+      <div class="ch-info">
+        <div class="ch-name">${ch.name}</div>
+        <div class="ch-sub">${ch.sub}</div>
+        <div class="ch-prog-wrap">
+          <div class="ch-prog-bar"><div class="ch-prog-fill" id="cpf-${ch.id}" style="width:${S.progress[ch.id]||0}%"></div></div>
+        </div>
+      </div>
+      <span class="ch-arrow">›</span>
+    </div>`).join('');
+  updateStats();
+  updateTimerUI();
+}
+
+// ═══════════════════════════════════════
+//  SCREEN NAV
+// ═══════════════════════════════════════
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('scr-'+name).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  if (name === 'chapters') document.getElementById('nav-chapters').classList.add('active');
+  else if (name === 'study') document.getElementById('nav-study-btn')?.classList.add('active');
+  else if (name === 'timer') document.getElementById('nav-timer').classList.add('active');
+  S.curScreen = name;
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function openChapter(id) {
+  S.ch = id;
+  S.quiz.idx = 0; S.quiz.order = []; S.quiz.sQ = 0; S.quiz.sD = 0;
+  const ch = CHAPTERS.find(c => c.id === id);
+  document.getElementById('sh-title').textContent = ch.name;
+  document.getElementById('sh-sub').textContent = ch.sub;
+  const studyBtn = document.getElementById('nav-study-btn');
+  studyBtn.style.display = 'flex';
+  showScreen('study');
+  S.mode = 'quiz';
+  updateModeTabs();
+  renderMode();
+}
+
+function backToChapters() {
+  showScreen('chapters');
+}
+
+// ═══════════════════════════════════════
+//  MODE
+// ═══════════════════════════════════════
+function switchMode(mode) {
+  S.mode = mode;
+  updateModeTabs();
+  renderMode();
+  document.getElementById('scroll-area').scrollTop = 0;
+}
+
+function updateModeTabs() {
+  ['quiz','summary','deepdive'].forEach(m => {
+    const btn = document.getElementById('tab-'+m);
+    if (btn) btn.classList.toggle('active', m === S.mode);
+  });
+}
+
+function renderMode() {
+  const body = document.getElementById('study-body');
+  if (!body) return;
+  if (S.mode === 'quiz') renderQuiz(body);
+  else if (S.mode === 'summary') renderSummary(body);
+  else renderDeepdive(body);
+}
+
+// ═══════════════════════════════════════
+//  QUIZ
+// ═══════════════════════════════════════
+function renderQuiz(body) {
+  const qs = Q[S.ch] || [];
+  if (!qs.length) { body.innerHTML = '<p style="color:var(--text3);padding:20px">Sorular yükleniyor…</p>'; return; }
+  if (!S.quiz.order.length) {
+    S.quiz.order = [...Array(qs.length).keys()].sort(() => Math.random()-0.5);
+  }
+  if (S.quiz.idx >= qs.length) { showResult(body, qs.length); return; }
+  const qi = S.quiz.order[S.quiz.idx];
+  const q = qs[qi];
+  const curr = S.quiz.idx + 1;
+  const pct = Math.round(curr / qs.length * 100);
+  body.innerHTML = `
+    <div class="quiz-meta">
+      <span class="qm-count">${curr}/${qs.length}</span>
+      <div class="qm-bar"><div class="qm-fill" style="width:${pct}%"></div></div>
+      <span class="score-pill">${S.quiz.sD}/${S.quiz.sQ}</span>
+    </div>
+    <div class="q-card">
+      <div class="q-text">${q.s}</div>
+      <div class="options">
+        ${q.o.map((opt,i) => `
+          <button class="opt" id="opt-${i}" onclick="answer(${i})">
+            <span class="opt-ltr">${'ABCD'[i]}</span>
+            <span>${opt}</span>
+          </button>`).join('')}
+      </div>
+      <div class="exp-box" id="exp-box">
+        <div class="exp-tag">📌 Açıklama</div>
+        <div>${q.a}</div>
+      </div>
+    </div>
+    <div class="quiz-btns" id="quiz-btns" style="display:none">
+      <button class="btn btn-outline" onclick="resetQuiz()">↺ Başa</button>
+      <button class="btn btn-gold" onclick="nextQ(${qs.length})">Sonraki →</button>
+    </div>`;
+  S.quiz.answered = false;
+}
+
+function answer(idx) {
+  if (S.quiz.answered) return;
+  S.quiz.answered = true;
+  const qs = Q[S.ch];
+  const q = qs[S.quiz.order[S.quiz.idx]];
+  document.querySelectorAll('.opt').forEach((b,i) => {
+    b.disabled = true;
+    if (i===q.d) b.classList.add('correct');
+    if (i===idx && i!==q.d) b.classList.add('wrong');
+  });
+  const ok = idx===q.d;
+  S.quiz.sQ++; if(ok) S.quiz.sD++;
+  S.stats.q++; if(ok) S.stats.d++;
+  document.getElementById('exp-box').classList.add('show');
+  document.getElementById('quiz-btns').style.display='flex';
+  document.querySelector('.score-pill').textContent = `${S.quiz.sD}/${S.quiz.sQ}`;
+  addProg(10); save(); updateStats();
+  toast(ok?'✓ Doğru!':'✗ Yanlış', ok?'ok':'err');
+}
+
+function nextQ(total) {
+  S.quiz.idx++;
+  if (S.quiz.idx >= total) { showResult(document.getElementById('study-body'), total); }
+  else { renderMode(); document.getElementById('scroll-area').scrollTop = 0; }
+}
+
+function resetQuiz() {
+  S.quiz.idx=0; S.quiz.order=[]; S.quiz.sQ=0; S.quiz.sD=0;
+  renderMode();
+}
+
+function showResult(body, total) {
+  const pct = total>0 ? Math.round(S.quiz.sD/total*100):0;
+  const icon = pct>=80?'🏆':pct>=60?'👍':'📚';
+  const msg = pct>=80?'Harika gidiyorsun!':pct>=60?'İyi iş çıkardın!':'Biraz daha çalışalım.';
+  const color = pct>=80?'var(--sage)':pct>=60?'var(--gold)':'var(--rose)';
+  body.innerHTML = `
+    <div class="result-card">
+      <div class="res-icon">${icon}</div>
+      <div class="res-title">${msg}</div>
+      <div class="res-sub">${S.quiz.sD}/${total} doğru · %${pct} başarı</div>
+      <div class="res-bar-wrap"><div class="res-bar"><div class="res-fill" style="width:${pct}%;background:${color}"></div></div></div>
+      <button class="btn btn-gold" style="width:100%" onclick="resetQuiz()">Tekrar Çöz</button>
+    </div>`;
+}
+
+// ═══════════════════════════════════════
+//  SUMMARY
+// ═══════════════════════════════════════
+function renderSummary(body) {
+  const cards = SUMMARIES[S.ch] || [];
+  body.innerHTML = cards.map(c => `
+    <div class="summary-card">
+      <h3>${c.title}</h3>
+      ${c.html}
+    </div>`).join('') + `
+    <button class="btn btn-gold" style="width:100%;margin-top:4px" onclick="switchMode('quiz')">❓ Sorularla Sına →</button>`;
+  addProg(5); save();
+}
+
+// ═══════════════════════════════════════
+//  DEEPDIVE
+// ═══════════════════════════════════════
+function renderDeepdive(body) {
+  const items = DD[S.ch] || [];
+  body.innerHTML = `<div class="dd-list">${items.map((it,i)=>`
+    <div class="dd-item" id="dd-${i}">
+      <div class="dd-q" onclick="toggleDD(${i})">
+        <span class="dd-q-text">${it.q}</span>
+        <span class="dd-chevron">›</span>
+      </div>
+      <div class="dd-ans">${it.a}</div>
+    </div>`).join('')}</div>`;
+}
+
+function toggleDD(i) {
+  const el = document.getElementById('dd-'+i);
+  const wasOpen = el.classList.contains('open');
+  document.querySelectorAll('.dd-item').forEach(d => d.classList.remove('open'));
+  if (!wasOpen) { el.classList.add('open'); addProg(5); save(); }
+}
+
+// ═══════════════════════════════════════
+//  PROGRESS & STATS
+// ═══════════════════════════════════════
+function addProg(n) {
+  if (!S.ch) return;
+  S.progress[S.ch] = Math.min(100, (S.progress[S.ch]||0)+n);
+  const el = document.getElementById('cpf-'+S.ch);
+  if(el) el.style.width = S.progress[S.ch]+'%';
+}
+function updateStats() {
+  document.getElementById('s-q').textContent = S.stats.q;
+  document.getElementById('s-d').textContent = S.stats.d;
+  document.getElementById('s-r').textContent = S.stats.q>0?Math.round(S.stats.d/S.stats.q*100)+'%':'—';
+  const tp = document.getElementById('ts-p');
+  const tq = document.getElementById('ts-q');
+  if(tp) tp.textContent = S.stats.p;
+  if(tq) tq.textContent = S.stats.q;
+}
+function save() {
+  try { localStorage.setItem('spl_ios', JSON.stringify({stats:S.stats, progress:S.progress})); } catch(e){}
+}
+
+// ═══════════════════════════════════════
+//  TIMER
+// ═══════════════════════════════════════
+const CIRC = 427.26;
+function timerToggle() {
+  if (S.timer.running) {
+    clearInterval(S.timer.tick);
+    S.timer.running = false;
+    document.getElementById('tbtn-start').textContent = '▶ Devam';
+    document.getElementById('tbtn-start').classList.remove('active');
+  } else {
+    S.timer.running = true;
+    document.getElementById('tbtn-start').textContent = '⏸ Durdur';
+    document.getElementById('tbtn-start').classList.add('active');
+    S.timer.tick = setInterval(timerTick, 1000);
+  }
+}
+function timerTick() {
+  if (S.timer.s <= 0) {
+    clearInterval(S.timer.tick);
+    S.timer.running = false;
+    document.getElementById('tbtn-start').textContent = '▶ Başlat';
+    document.getElementById('tbtn-start').classList.remove('active');
+    if (!S.timer.isBreak) {
+      S.stats.p++; updateStats(); save();
+      S.timer.isBreak = true; S.timer.s = 5*60; S.timer.total = 5*60;
+      document.getElementById('tr-fill').classList.add('brk');
+      document.getElementById('t-type').textContent = 'MOLA';
+      toast('🎉 Pomodoro bitti! 5 dk mola.');
+      updateSessionDots();
+    } else {
+      S.timer.isBreak = false; S.timer.s = 25*60; S.timer.total = 25*60;
+      document.getElementById('tr-fill').classList.remove('brk');
+      document.getElementById('t-type').textContent = 'ÇALIŞMA';
+      toast('💪 Mola bitti, haydi!');
+    }
+    updateTimerUI(); return;
+  }
+  S.timer.s--;
+  updateTimerUI();
+}
+function timerReset() {
+  clearInterval(S.timer.tick);
+  S.timer.running = false; S.timer.isBreak = false;
+  S.timer.s = 25*60; S.timer.total = 25*60;
+  document.getElementById('tr-fill').classList.remove('brk');
+  document.getElementById('t-type').textContent = 'ÇALIŞMA';
+  document.getElementById('tbtn-start').textContent = '▶ Başlat';
+  document.getElementById('tbtn-start').classList.remove('active');
+  updateTimerUI();
+}
+function updateTimerUI() {
+  const m = Math.floor(S.timer.s/60).toString().padStart(2,'0');
+  const s = (S.timer.s%60).toString().padStart(2,'0');
+  document.getElementById('t-num').textContent = `${m}:${s}`;
+  const offset = CIRC*(1-S.timer.s/S.timer.total);
+  document.getElementById('tr-fill').style.strokeDashoffset = offset;
+  document.getElementById('t-label').textContent = S.timer.isBreak?'Mola zamanı ☕':'Pomodoro Tekniği';
+}
+function updateSessionDots() {
+  document.querySelectorAll('.sdot').forEach((d,i) => d.classList.toggle('done', i < S.stats.p%4));
+}
+
+// ═══════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════
+let toastT;
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.className = 'toast show '+type;
+  clearTimeout(toastT);
+  toastT = setTimeout(()=>{ el.className='toast'; }, 2800);
+}
+
+init();
+</script>
+</body>
+</html>
